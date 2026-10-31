@@ -1,0 +1,23 @@
+#include <stdio.h>
+
+int main(void) {
+    int n;
+    scanf("%d", &n);
+
+    char ch = 'A';
+    int num = 0;
+
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (i + j >= n + 2)
+                printf("%d", num++);
+            else
+                printf("%c", ch++);
+            if (j < n)
+                printf(" ");
+        }
+        printf("\n");
+    }
+
+    return 0;
+}
