@@ -1,0 +1,38 @@
+#include <stdio.h>
+
+int main(void) {
+    int a[4][2];
+    int rowSum[4] = {0};
+    int colSum[2] = {0};
+    int total = 0;
+    int i, j;
+
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 2; j++) {
+            scanf("%d", &a[i][j]);
+            rowSum[i] += a[i][j];
+            colSum[j] += a[i][j];
+            total += a[i][j];
+        }
+    }
+
+    for (i = 0; i < 4; i++) {
+        if (i > 0) {
+            printf(" ");
+        }
+        printf("%d", rowSum[i] / 2);
+    }
+    printf("\n");
+
+    for (j = 0; j < 2; j++) {
+        if (j > 0) {
+            printf(" ");
+        }
+        printf("%d", colSum[j] / 4);
+    }
+    printf("\n");
+
+    printf("%d\n", total / 8);
+
+    return 0;
+}
