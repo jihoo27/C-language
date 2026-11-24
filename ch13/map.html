@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GPS 이동 경로</title>
+  <!-- Leaflet + OpenStreetMap: API 키 필요 없음 -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    html, body, #map { height: 100%; margin: 0; }
+    .legend {
+      background: #fff; padding: 8px 12px; border-radius: 6px;
+      box-shadow: 0 0 6px rgba(0,0,0,.3); font: 13px/1.6 sans-serif;
+    }
+    .legend i {
+      display: inline-block; width: 12px; height: 12px;
+      border-radius: 50%; margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  const map = L.map('map').setView([42.3634, -71.0985], 15);
+
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // 속도 -> 색상 (저속 <18, 중속 18~20, 고속 >20)
+  function speedColor(speed) {
+    if (speed < 18) return 'green';
+    if (speed <= 20) return 'orange';
+    return 'red';
+  }
+
+  fetch('output.json')
+    .then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(data => {
+      const points = [];
+      data.forEach(p => {
+        const speed = parseInt(String(p.info).replace(/\D/g, ''), 10);
+        // 키 오타(longtitude)도 허용
+        const lng = p.longitude !== undefined ? p.longitude : p.longtitude;
+        const pos = [p.latitude, lng];
+        points.push(pos);
+        L.circleMarker(pos, {
+          radius: 6,
+          color: speedColor(speed),
+          fillColor: speedColor(speed),
+          fillOpacity: 0.9
+        }).bindPopup(p.info).addTo(map);
+      });
+
+      L.polyline(points, { color: '#3366cc', weight: 2, opacity: 0.6 }).addTo(map);
+      if (points.length > 0) map.fitBounds(points, { padding: [30, 30] });
+    })
+    .catch(err => alert('output.json을 불러오지 못했습니다: ' + err.message));
+
+  // 범례
+  const legend = L.control({ position: 'bottomright' });
+  legend.onAdd = function () {
+    const div = L.DomUtil.create('div', 'legend');
+    div.innerHTML =
+      '<b>속도 범례</b><br>' +
+      '<i style="background:green"></i>저속 (&lt; 18)<br>' +
+      '<i style="background:orange"></i>중속 (18~20)<br>' +
+      '<i style="background:red"></i>고속 (&gt; 20)';
+    return div;
+  };
+  legend.addTo(map);
+</script>
+</body>
+</html>
